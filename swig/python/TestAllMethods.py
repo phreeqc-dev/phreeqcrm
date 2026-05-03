@@ -1,4 +1,3 @@
-
 import phreeqcrm
 if phreeqcrm.has_mpi():
     from mpi4py import MPI
@@ -11,15 +10,52 @@ import yamlphreeqcrm
     #end module mydata
 
 def testallmethods():
-
+    def basic_callback(x, y, msg, cookie):
+        # in this example, cookie will be defined as hyd_k
+        return cookie[int(x)]
+    # Start only MPI==========================================
+        #MPI for Basic CALLBACK function is tricky and uses two levels
+        #In this example.
+        #   (1) set_mpi_worker_callback(worker_callback, cookie) sets worker callback
+        #   (2) worker_callback(task, cookie) is called when task is a large integer, 
+        #       cookie is from set_mpi_worker_callback
+        #   (3) Root calls register_basic_callback_mpi
+        #   (4) Root sends task 1000 to workers
+        #   (5) Workers call worker_callback
+        #   (6) Workers call register_basic_callback_mpi
+        #   (7) Root and workers call set_basic_callback
+    def register_basic_callback_mpi(cookie): 
+        comm = MPI.COMM_WORLD
+        rank = comm.Get_rank()
+        if rank == 0:
+            data = np.array(1000, dtype='i')   # 32-bit int
+            #comm.Bcast([data, MPI.INT], root=0)
+            comm.Bcast(data, root=0)
+        # Broadcast from root (rank 0) to all ranks
+        bmi.set_basic_callback(basic_callback, cookie)
+        return 
+    def worker_callback(task, cookie):
+        # cookie is defined by set_mpi_worker_callback
+        if (task == 1000):
+            register_basic_callback_mpi(cookie)
+        else:
+            print("Worker task not defined for worker_callback.")
+            exit()
+        return
+    # End only MPI=====================================================
     # Create BMIPhreeqcRM object, must use two-argument constructor
     if phreeqcrm.has_mpi():
         nxyz = 40
         bmi = phreeqcrm.BMIPhreeqcRM(nxyz, MPI.COMM_WORLD)
-
         # Put workers in worker loop
         mpi_myself = bmi.GetMpiMyself()
         if (mpi_myself > 0):
+            # for testing callback
+            hyd_k = np.full(nxyz, 0.0)
+            for i in range(nxyz//2):
+                hyd_k[i] = 0.5 + i
+                hyd_k[i+nxyz//2] = hyd_k[i]
+            bmi.set_mpi_worker_callback(worker_callback, hyd_k)
             bmi.MpiWorker()
             bmi.finalize()
             print("Worker success: ", mpi_myself)
@@ -43,14 +79,17 @@ def testallmethods():
         bmi.initialize(YAML_filename)   # void function
         bmi.InitializeYAML(YAML_filename)
         print(f"Initialize")
-
-
     #
     # Use all BMIPhreeqcRM methods roughly in order of use
     # 
     #---------
     nxyz = bmi.GetGridCellCount()
     print(f"GetGridCellCount {type(nxyz)}, {nxyz}")
+    # for testing callback
+    hyd_k = np.full(nxyz, 0.0)
+    for i in range(nxyz//2):
+        hyd_k[i] = 0.5 + i
+        hyd_k[i+nxyz//2] = hyd_k[i]
     dest = np.empty((1,), dtype=int)
     nxyz = bmi.get_value("GridCellCount", dest)
     print(f"get_value('GridCellCount') {type(nxyz)}, {nxyz[0]}")
@@ -64,11 +103,21 @@ def testallmethods():
     grid2chem = np.full((nxyz), -1)
     for i in range(nxyz[0]//2):
         grid2chem[i] = i
+        grid2chem[i+nxyz[0]//2] = i
     x=bmi.CreateMapping(grid2chem)
     print(f"CreateMapping {type(x)}, {x}")
     #--------- 
     x=bmi.LoadDatabase("phreeqc.dat")
     print(f"LoadDatabase {type(x)}, {x}")
+    # Set function for Basic CALLBACK function
+    if (not phreeqcrm.has_mpi()):
+        bmi.set_basic_callback(basic_callback, hyd_k)
+    else:
+        register_basic_callback_mpi(hyd_k)
+    print(f"Basic callback has been set.")
+    # If you need to test the callback
+    result = bmi._execute_basic_callback(1, 0, "unused here")
+    print("Expected value: ", hyd_k[1], "Result: ", result)
     #
     # Set properties
     #
@@ -842,9 +891,17 @@ def testallmethods():
     #---------
     bmi.update()    
     print(f"update")
+    #---------    Test callback in SELECTED_OUTPUT 5
+    bmi.RunString(True, False, False, "SELECTED_OUTPUT 5; USER_PUNCH 5; 10 PUNCH CALLBACK(cell_no, 0, 'not_used')")
     #-------	
     bmi.update_until(864000.0)
     print(f"update_until")
+    #-------
+    bmi.SetCurrentSelectedOutputUserNumber(5)
+    v=bmi.GetSelectedOutput()
+    print("Test callback")
+    for i in range(nxyz[0]):
+        print("    Cell: ", i, " Hydraulic conductivity: ", v[i])
     #---------
     if phreeqcrm.has_mpi:
         bmi.MpiWorkerBreak()
