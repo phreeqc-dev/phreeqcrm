@@ -892,7 +892,7 @@ def testallmethods():
     bmi.update()    
     print(f"update")
     #---------    Test callback in SELECTED_OUTPUT 5
-    bmi.RunString(True, False, False, "SELECTED_OUTPUT 5; USER_PUNCH 5; 10 PUNCH CALLBACK(cell_no, 0, 'not_used')")
+    bmi.RunString(True, False, False, "SELECTED_OUTPUT 5; USER_PUNCH 5; -heading hyd_k; 10 PUNCH CALLBACK(cell_no, 0, 'not_used')")
     #-------	
     bmi.update_until(864000.0)
     print(f"update_until")
@@ -900,7 +900,7 @@ def testallmethods():
     bmi.SetCurrentSelectedOutputUserNumber(5)
     v=bmi.GetSelectedOutput()
     print("Test callback")
-    for i in range(nxyz[0]):
+    for i in range(3): # first 3 of nxyz
         print("    Cell: ", i, " Hydraulic conductivity: ", v[i])
     #---------
     if phreeqcrm.has_mpi:
@@ -913,11 +913,8 @@ def testallmethods():
     return
 
     #Should be private: x=bmi.ReturnHandler()
-    #TODO x=bmi.SetMpiWorkerCallbackC()
-    #TODO x=bmi.SetMpiWorkerCallbackCookie()
     #TODO x=bmi.MpiAbort()
-    #TODO x=bmi.MpiWorker()
-    #TODO x=bmi.MpiWorkerBreak()
+    #TODO bmi.GetWorkers()
 
 if __name__ == '__main__':
     testallmethods()
