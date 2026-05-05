@@ -46,7 +46,7 @@ int Advect_cpp()
 		std::vector<double> hydraulic_K;
 		for (int i = 0; i < nxyz; i++)
 		{
-			hydraulic_K.push_back(i * 2.0);
+			hydraulic_K.push_back(i * 2.0 + 0.5);
 		}
 		my_data some_data;
 		some_data.hydraulic_K = &hydraulic_K;
