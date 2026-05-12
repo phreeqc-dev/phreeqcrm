@@ -136,7 +136,7 @@ jobs:
         os: [ubuntu-24.04, ubuntu-22.04]
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: update apt-get
       run: sudo apt-get -y update
@@ -166,7 +166,7 @@ jobs:
     #   NAME: ${{ needs.init.outputs.NAME }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: autoreconf
       run: autoreconf -fvi
@@ -178,7 +178,7 @@ jobs:
       run: sudo apt-get -y install doxygen graphviz
 
     - name: update doxygen using micromamba env
-      uses: mamba-org/setup-micromamba@v1
+      uses: mamba-org/setup-micromamba@v3
       with:
         environment-file: Doxygen/doxygen.environment.yml
 
@@ -202,7 +202,7 @@ jobs:
       working-directory: ${{github.workspace}}/_build
       run: DISTCHECK_CONFIGURE_FLAGS="--enable-fortran-test --with-yaml-cpp" make -j2 distcheck
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: tarball
         path: ${{github.workspace}}/_build/*.tar.gz
@@ -211,7 +211,7 @@ jobs:
       shell: bash
       run: cp doc/README.TXT PhreeqcRM_ReadMe.txt
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: readme
         path: ${{github.workspace}}/PhreeqcRM_ReadMe.txt
@@ -225,7 +225,7 @@ jobs:
       working-directory: ${{github.workspace}}/_build
       run: make dist-zip
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: zip
         path: ${{github.workspace}}/_build/*.zip
@@ -246,13 +246,13 @@ jobs:
 
     steps:
 
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: tarball
 
     # - name: Install GNU Fortran (macOS)
     #   if: ${{ runner.os == 'macOS' }}
-    #   uses: awvwgk/setup-fortran@main
+    #   uses: fortran-lang/setup-fortran@v1
     #   with:
     #     compiler: gcc
     #     version: 12
@@ -332,7 +332,7 @@ jobs:
     - name: Check phreeqcrm.pc libs
       run:  pkg-config --libs phreeqcrm
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Test autotools install
       working-directory: ${{ github.workspace }}/Tests
@@ -373,7 +373,7 @@ jobs:
       shell: bash
       run: echo "VCPKG_INSTALLATION_ROOT=$VCPKG_INSTALLATION_ROOT" >> $GITHUB_ENV
 
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: tarball
 
@@ -468,7 +468,7 @@ jobs:
       if: runner.os == 'Windows'
       run: Remove-Item -Recurse -Force *
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Test install (configure) (Non-Windows)
       if: ${{ matrix.phreeqcrm_with_yaml_cpp != 'ON' }}
@@ -535,13 +535,13 @@ jobs:
       shell: bash
       run: echo "VCPKG_INSTALLATION_ROOT=$VCPKG_INSTALLATION_ROOT" >> $GITHUB_ENV
 
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         name: tarball
 
     - name: Install GNU Fortran (macOS)
       if: ${{ runner.os == 'macOS' }}
-      uses: awvwgk/setup-fortran@main
+      uses: fortran-lang/setup-fortran@v1
       with:
         compiler: gcc
         version: 12
@@ -656,7 +656,7 @@ jobs:
     #   if: runner.os == 'Windows'
     #   run: Remove-Item -Recurse -Force *
 
-    # - uses: actions/checkout@v4
+    # - uses: actions/checkout@v6
 
     # - name: Test install (configure) (Non-Windows)
     #   if: runner.os != 'Windows'
@@ -707,7 +707,7 @@ jobs:
       VER_STRING: ${{ needs.init.outputs.VER }}-${{ needs.init.outputs.REL }}
 
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: tarball
 
