@@ -118,7 +118,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: autoreconf
       run: autoreconf -fvi
@@ -130,7 +130,7 @@ jobs:
       run: sudo apt-get -y install doxygen graphviz
 
     - name: update doxygen using micromamba env
-      uses: mamba-org/setup-micromamba@v1
+      uses: mamba-org/setup-micromamba@v3
       with:
         environment-file: Doxygen/doxygen.environment.yml
 
@@ -171,7 +171,7 @@ jobs:
       working-directory: ${{github.workspace}}/_build
       run: mv phreeqcrm-*.tar.gz phreeqcrm-*.zip ../.
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: phreeqcrm-artifacts
         path: |
