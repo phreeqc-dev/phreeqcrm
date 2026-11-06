@@ -47,7 +47,7 @@ jobs:
           CIBW_TEST_COMMAND: "pytest {project}/swig/python"
           CIBW_ENVIRONMENT_MACOS: >
             OpenMP_ROOT=$(brew --prefix libomp)
-            MACOSX_DEPLOYMENT_TARGET=15.0
+            MACOSX_DEPLOYMENT_TARGET=26.0
 
       - uses: actions/upload-artifact@v6
         with:
