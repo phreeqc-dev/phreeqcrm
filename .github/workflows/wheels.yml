@@ -27,6 +27,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, windows-11-arm, macos-15-intel, macos-latest]
+        include:
+          - os: macos-15-intel
+            deploy_target: 15.0
+          - os: macos-latest
+            deploy_target: 26.0
 
     steps:
       - uses: actions/checkout@v6
@@ -47,7 +52,7 @@ jobs:
           CIBW_TEST_COMMAND: "pytest {project}/swig/python"
           CIBW_ENVIRONMENT_MACOS: >
             OpenMP_ROOT=$(brew --prefix libomp)
-            MACOSX_DEPLOYMENT_TARGET=15.0
+            MACOSX_DEPLOYMENT_TARGET=${{ matrix.deploy_target }}
 
       - uses: actions/upload-artifact@v6
         with:
